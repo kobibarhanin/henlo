@@ -14,6 +14,8 @@ import org.apache.http.util.EntityUtils;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 public class App {
 
@@ -57,14 +59,73 @@ public class App {
         callApi(request);
     }
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    // This method sends picture to a specific chat
+    private static void sendPicture(String picURL, String caption, String chatId) throws IOException, URISyntaxException {
+        HttpGet request = new HttpGet(String.format("%s/%s", baseUrl, "sendPhoto"));
+        URI uri = new URIBuilder(request.getURI())
+                .addParameter("photo",picURL)
+                .addParameter("chat_id",chatId)
+                .addParameter("caption",caption)
+                .build();
+        request.setURI(uri);
+        callApi(request);
+    }
 
+    public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
+
+        String pic ="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=1.00xw:0.669xh;0,0.190xh&resize=1200:*";
         String chatId = "1208420970";
-        sendMessage("test",chatId);
+        sendPicture(pic,"am dogo",chatId);
 
-        JsonObject rv = getUpdates();
-        System.out.println(rv);
+//        String chatId = "1208420970";
+//        sendMessage("test",chatId);
 
+//        JsonObject rv = getUpdates();
+//        System.out.println(rv);
+
+//        float sum = 0;
+//        for (int k=0; k<100; k++){
+//            Random rand = new Random();
+//            int i = 0;
+//            while (true){
+//                i++;
+//                TimeUnit.MILLISECONDS.sleep(1);
+//                int rand_int1 = rand.nextInt(20);
+////                System.out.println(rand_int1);
+//                if (rand_int1 == 14){
+////                    System.out.println("took " + i);
+//                    sum +=i;
+//                    break;
+//                }
+//            }
+//        }
+//        System.out.println("average = " + sum/100);
+
+//        while (true){
+            // check for updates to support reply
+            // if no reply needed generate random number
+            // check if random number is a hit
+            // (1/3600 for 1 sec. interval => 1 hit per hour)
+            // if hit -> send random remark
+//        }
     }
 
 }
+
+//    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+//    builder.addTextBody("field1", "yes", ContentType.TEXT_PLAIN);
+//
+//// This attaches the file to the POST:
+
+//        File f = new File("[/path/to/upload]");
+//        builder.addBinaryBody(
+//        "file",
+//        new FileInputStream(f),
+//        ContentType.APPLICATION_OCTET_STREAM,
+//        f.getName()
+//        );
+//
+//        HttpEntity multipart = builder.build();
+//        uploadFile.setEntity(multipart);
+//        CloseableHttpResponse response = httpClient.execute(uploadFile);
+//        HttpEntity responseEntity = response.getEntity();
