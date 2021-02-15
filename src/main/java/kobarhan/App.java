@@ -2,18 +2,25 @@ package kobarhan;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import org.apache.http.HttpEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.mime.MultipartEntityBuilder;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 
-import java.io.IOException;
+import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -71,13 +78,63 @@ public class App {
         callApi(request);
     }
 
+    private static void sendLocalPicture(String picPath, String picCaption, String chatId) throws IOException {
+
+        HttpPost uploadFile = new HttpPost(String.format("%s/%s", baseUrl, "sendPhoto"));
+        MultipartEntityBuilder builder = MultipartEntityBuilder.create();
+        builder.addTextBody("caption", picCaption, ContentType.TEXT_PLAIN);
+        builder.addTextBody("chat_id", chatId, ContentType.TEXT_PLAIN);
+
+        // This attaches the file to the POST:
+
+        File f = new File(picPath);
+        builder.addBinaryBody(
+        "photo",
+        new FileInputStream(f),
+        ContentType.APPLICATION_OCTET_STREAM,
+        f.getName()
+        );
+
+        HttpEntity multipart = builder.build();
+        uploadFile.setEntity(multipart);
+
+        callApi(uploadFile);
+    }
+
+    private class Photo{
+        public String id;
+        public String caption;
+
+        public Photo() {
+        }
+
+        public Photo(String id, String caption) {
+            this.id = id;
+            this.caption = caption;
+        }
+    }
+
+
     public static void main(String[] args) throws IOException, URISyntaxException, InterruptedException {
 
-        String pic ="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=1.00xw:0.669xh;0,0.190xh&resize=1200:*";
-        String chatId = "1208420970";
-        sendPicture(pic,"am dogo",chatId);
+        // create Gson instance
+        Gson gson = new Gson();
+
+        // create a reader
+        Reader reader = Files.newBufferedReader(Paths.get("data/captions.json"));
+
+        // convert JSON array to list of users
+        List<Photo> photos = new Gson().fromJson(reader, new TypeToken<List<Photo>>() {}.getType());
+
+        photos.forEach(System.out::println);
 
 //        String chatId = "1208420970";
+//        sendLocalPicture("data/images/1.jpg","henlo fren", chatId);
+
+
+//        String pic ="https://hips.hearstapps.com/hmg-prod.s3.amazonaws.com/images/dog-puppy-on-garden-royalty-free-image-1586966191.jpg?crop=1.00xw:0.669xh;0,0.190xh&resize=1200:*";
+//        sendPicture(pic,"am dogo",chatId);
+
 //        sendMessage("test",chatId);
 
 //        JsonObject rv = getUpdates();
@@ -112,20 +169,3 @@ public class App {
 
 }
 
-//    MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-//    builder.addTextBody("field1", "yes", ContentType.TEXT_PLAIN);
-//
-//// This attaches the file to the POST:
-
-//        File f = new File("[/path/to/upload]");
-//        builder.addBinaryBody(
-//        "file",
-//        new FileInputStream(f),
-//        ContentType.APPLICATION_OCTET_STREAM,
-//        f.getName()
-//        );
-//
-//        HttpEntity multipart = builder.build();
-//        uploadFile.setEntity(multipart);
-//        CloseableHttpResponse response = httpClient.execute(uploadFile);
-//        HttpEntity responseEntity = response.getEntity();
